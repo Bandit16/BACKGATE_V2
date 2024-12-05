@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    {% if user.is_authenticated %}
+
+    <p>what room would you like to join?</p>
+    <input type="text" id="room_name">
+    <input type="submit" value="join" id="join">
+    {% else %}
+    <br>
+    <h3>If you are not LOGGED-IN Click here</h3>
+    <button id="myButton" style=" margin-left: 10px;
+            background: rgb(0, 196, 65);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.23s;">LOG IN</button>
+    <script>
+        document.getElementById('myButton').addEventListener('click', function () {
+            window.location.pathname = 'login/'
+        });
+    </script>
+    {% endif %}
+
+    <script>
+        document.getElementById('join').onclick = function (event) {
+            var room_name = document.getElementById('room_name').value
+            console.log('room name is ', room_name)
+            console.log('room name is ', window.location.pathname)
+
+            window.location.pathname = 'chat/' + room_name
+        }
+
+    </script>
+
+</body>
+
+</html>

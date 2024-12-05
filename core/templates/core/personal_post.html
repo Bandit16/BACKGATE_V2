@@ -1,0 +1,171 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://kit.fontawesome.com/74f59d5ad7.js" crossorigin="anonymous"></script>
+
+
+
+    <title>BackGate</title>
+    <link rel="stylesheet" href="{% static 'core/post.css' %}" />
+    <script src="{% static 'core/post.js' %}" defer></script>
+
+</head>
+
+<body class="">
+    {% if request.user.member == member %}
+
+
+    <div id="createPost" class="active">
+        <div class="createPost-top">
+            <h3 class="createPost-top-heading">Create Post</h3>
+            <i class="fa-solid fa-rectangle-xmark crossMarks"></i>
+        </div>
+        <div class="createPost-middle">
+            <div class="nameAndPhotoContainer">
+                <img src="{{ request.user.member.profile_pic.url }}" alt="img">
+                <div class="nameAndPublic">
+                    <h2 class="fullName">{{ request.user.member }}</h2>
+                    <p class="postWatch"><i class="fa-solid fa-globe"></i>Public</p>
+                </div>
+            </div>
+            <div class="textAreas">
+                <form method="post" enctype="multipart/form-data" action="{% url 'post' %}">
+                    {% csrf_token %}
+                    <textarea name="description" id="textArea" required class="textArea"
+                        placeholder="What's On Your Mind"></textarea>
+                    <input type="file" id="post_picture" name="post_picture" accept="image/*">
+
+            </div>
+        </div>
+        <div class="createPost-bottom">
+            <p class="bottomText">Add To Your Post</p>
+            <div class="icons">
+
+                <i class="fa-solid fa-photo-film" title="photo/video"></i>
+                <i class="fa-solid fa-user-tag" title="tag friends"></i>
+                <i class="fa-solid fa-face-smile" title="feeling/activity"></i>
+                <i class="fa-solid fa-location-dot" title="location"></i>
+                <i class="fa-solid fa-flag" title="life events"></i>
+                <i class="fa-solid fa-circle-caret-down"></i>
+            </div>
+        </div>
+        <div class="createPost-button">
+            <button class="btn" type="submit">Post</button>
+        </div>
+    </div>
+    </form>
+    {% endif %}
+
+
+
+    <section id="searchBar" class="searchBar">
+        <div class="container">
+            <div class="searchbarContainer">
+                <label for="search"><i class="fa-solid fa-magnifying-glass"></i></label>
+                <form method="get">
+                    <input type="text" name="description" class="searchBarText" placeholder="Search persons or posts"
+                        id="search">
+                </form>
+            </div>
+        </div>
+
+    </section>
+    {% if request.user.member == member %}
+    {% if request.user.is_anonymous %}
+
+    {% else %}
+
+    <section id="postposting" class="postsPosting">
+        <div class="container">
+            <div class="topPosts">
+                <img src="{{request.user.member.profile_pic.url}}" alt="image">
+                <input type="text" name="inputField" id="inputText" placeholder="What's on your Mind?">
+            </div>
+            <div class="postIcons">
+                <a href="#" class="video"><i class="fa-sharp fa-solid fa-video"></i>Live Video</a>
+                <a href="#" class="images"><i class="fa-solid fa-image"></i>Photo/Video</a>
+                <a href="#" class="smile"><i class="fa-regular fa-face-smile"></i>Feeling/activity</a>
+            </div>
+        </div>
+
+    </section>
+    {% endif %}
+    {% endif %}
+
+    <section id="posts">
+        <h1 class="heading">Posts of {{member}}</h1>
+
+
+        <div class="postContainer">
+
+            {% for post in posts %}
+
+
+            <div class="post post1">
+                <div class="top">
+                    <div class="imageContainer">
+                        <img src="{{post.member.profile_pic.url}}">
+                    </div>
+                    <div class="personNameAndTime">
+                        <a href="{% url 'personal_post' post.member.id %}">
+                            <h3 class="personName">{{post.member}}</h3>
+                        </a>
+                        <p class="time">{{post.date_created|timesince}}</p>
+                    </div>
+                </div>
+
+
+
+                <div class="bottom">
+                    <div class="postTitle">
+                        {{post.description}}
+                    </div>
+
+                    <div class="photoContainer">
+                        {% if post.post_picture %}
+                        <img src="{{post.post_picture.url}}">
+                        {% else %}
+                        {% endif %}
+                    </div>
+                    <div class="reactIcons">
+
+                        <i class="fa-sharp fa-solid fa-thumbs-up"></i>
+                        <i class="fa-sharp fa-solid fa-heart"></i>
+                        <p class="text">You and 6 others</p>
+
+
+
+                    </div>
+
+
+
+
+
+                    <div class="reactAndCommentContainer">
+                        <a href="{% url 'post_delete' post.id %}"><button class="reactButton"><i
+                                    class="fa-regular fa-thumbs-up"></i>React</button></a>
+                        <a href="{% url 'post_delete' post.id %}"><button class="commentButton"><i
+                                    class="fa-regular fa-comment"></i>Delete</button></a>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+
+        </div>
+        <div class="loadmore">
+            <a class=" btn" href="{% url 'post' %}">Go Back</a>
+        </div>
+
+    </section>
+
+
+</body>
+
+</html>

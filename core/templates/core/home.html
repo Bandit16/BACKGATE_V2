@@ -1,0 +1,233 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://kit.fontawesome.com/74f59d5ad7.js" crossorigin="anonymous"></script>
+    <!-- ?Use of swiper css link -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+    <!-- ?Swiper JavaScript link -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js" defer></script>
+    <!-- !Font Awesome Link -->
+    <script src="https://kit.fontawesome.com/74f59d5ad7.js" crossorigin="anonymous"></script>
+
+    <title>BackGate</title>
+    <link rel="stylesheet" href="{% static 'core/home.css' %}" />
+    <script src="{% static 'core/home.js' %}" defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <!--! Navigation Bar Starts -->
+    <section class="header">
+        <div class="navbar">
+            <a href=""><i class="fa-solid fa-torii-gate gate"></i><img src="{% static 'core/logo.svg' %} "
+                    alt="logo" /></a>
+
+            <nav id="navItems">
+                <a href="#" class="active">Home</a>
+                <a href="#members">Members</a>
+                <a href="{% url 'post' %}">Posts</a>
+                <a href="{% url 'room' %}">Chat</a>
+
+                {% if user.is_anonymous %}
+                <a href="{% url 'account_login' %}">login</a>
+                {% else %}
+                <a href="{% url 'accountSettings' %}" style="color: rgb(231, 53, 225);">Hello! {{user}}</a>
+                <!-- <img src="{{request.user.customer.profile_pic.url}}" alt=""> -->
+
+
+                {% endif %}
+            </nav>
+
+            <i class="fa-solid fa-bars icons" id="menu"></i>
+        </div>
+    </section>
+
+    <!-- !Nav Section Ends -->
+
+    <!-- !Home section starts here -->
+
+    <section id="home" class="home">
+        <div class="text-container">
+            <p class="heading">Back Gate</p>
+            <p>Where dreams Begins</p>
+            <button class="btn">Know More</button>
+        </div>
+    </section>
+
+    <!-- !Home Section ends here -->
+
+    <!-- !Members Section Starts Here -->
+
+    <section id="members">
+        <h1 class="heading">Members</h1>
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+
+                {% for user in users %}
+
+                <div class="swiper-slide">
+                    <div class="cards-container">
+                        <div class="photo-container">
+                            <div class="image">
+                                <img src="{{ user.profile_pic.url }}" alt="photo" />
+                            </div>
+                        </div>
+
+                        <div class="information">
+                            <div class="text-container">
+                                <h2 class="name">{{user.user.username}}</h2>
+                                <p class="faculty" title="Bachelor in Computer Technology">
+                                    {{user.faculty}}
+                                </p>
+                                <p class="batch">{{user.batch}}</p>
+                                <button class="btn knowMoreBtn">know more</button>
+                            </div>
+
+                            <div class="social-media-icons">
+                                <i class="fa-brands fa-facebook icon1"></i>
+                                <i class="fa-brands fa-linkedin icon2"></i>
+                                <i class="fa-brands fa-github icon3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+
+
+
+
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </section>
+
+
+
+
+    <!-- !Members Section ends here -->
+
+
+    <section id="posts">
+        <h1 class="heading">Latest Posts</h1>
+
+
+        <div class="postContainer">
+
+            {% for post in posts %}
+
+
+            <div class="post post1">
+                <div class="top">
+                    <div class="imageContainer">
+                        <img src="{{post.member.profile_pic.url}}">
+                    </div>
+                    <div class="personNameAndTime">
+                        <a href="{% url 'personal_post' post.member.id %}">
+                            {% if request.user.member == post.member %}
+
+                            <h3 class="personName" style="color: rgb(0, 114, 185);">{{post.member}}</h3>
+                            {% else%}
+                            <h3 class="personName" style="color: rgb(0, 0, 0);">{{post.member}}</h3>
+                            {% endif %}
+                        </a>
+                        <p class="time">{{post.date_created|timesince}}</p>
+                    </div>
+                </div>
+
+
+
+                <div class="bottom">
+                    <div class="postTitle">
+                        {{post.description}}
+                    </div>
+
+                    <div class="photoContainer">
+                        {% if post.post_picture %}
+                        <img src="{{post.post_picture.url}}">
+                        {% else %}
+                        <img src="/static/default.png">
+                        {% endif %}
+                    </div>
+                    <div class="reactIcons">
+
+                        <i class="fa-sharp fa-solid fa-thumbs-up"></i>
+                        <i class="fa-sharp fa-solid fa-heart"></i>
+                        <p class="text">You and {{post.description|wordcount}} others</p>
+
+
+
+                    </div>
+                    <div class="reactAndCommentContainer">
+                        <button class="reactButton"><i class="fa-regular fa-thumbs-up"></i>React</button>
+                        <button class="commentButton"><i class="fa-regular fa-comment"></i>Comments</button>
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+
+
+
+        </div>
+        <div class="loadmore">
+            <a class=" btn" href="{% url 'post' %}">Load More</a>
+        </div>
+
+    </section>
+
+
+
+
+    <section class="footer">
+
+        <div class="logo">
+            <a href="">
+                <h1><i class="fa-solid fa-torii-gate gate"></i>BackGate</h1>
+            </a>
+        </div>
+
+
+        <div class="links">
+            <h3>Quick Links</h3>
+            <a href="#home"> <i class="fas fa-angle-right"></i>Home</a>
+            <a href="#members"> <i class="fas fa-angle-right"></i>Members</a>
+            <a href="#members"> <i class="fas fa-angle-right"></i>Posts</a>
+            <a href="{% url 'account_logout' %}"> <i class="fas fa-angle-right"></i>Logout</a>
+
+
+
+        </div>
+
+        <div class="contactUs">
+            <h3>Contact Info</h3>
+            <a id="chat-link" href="chat/backgate"><i class="fas fa-comment"></i>Official backgate chat</a>
+            <a href="#"> <i class="fas fa-phone"></i>+123-456-7890</a>
+            <a href="#"> <i class="fas fa-envelope"></i>backgate2023@gmail.com</a>
+            <a href="#"> <i class="fas fa-map"></i>Dharan,Nepal</a>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+</body>
+
+</html>
+
+{% comment %}
+{% if user.is_anonymous %}
+<a href="{% url 'account_login' %}">login</a>
+{% else %}
+<a href="{% url 'accountSettings' %}" style="color: rgb(231, 53, 225);">Hello! {{user}}</a>
+<!-- <img src="{{request.user.customer.profile_pic.url}}" alt=""> -->
+
+
+{% endif %}
+{% endcomment %}
