@@ -15,6 +15,7 @@ class Member(models.Model):
         ('BCE', 'BCE'),
         ('BAG', 'BAG'),
         ('BARCH', 'BARCH'),
+        ('CA', 'CA'),
 
     )
     user = models.OneToOneField(

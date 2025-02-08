@@ -4,6 +4,7 @@ from core.filters import PostFilter
 from .forms import MemberForm
 from .models import Member , Posts , Chat
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 
@@ -103,6 +104,7 @@ def post_delete(request,id):
         'post':post
     }
     return render(request,'core/delete.html',context)
+@login_required
 def chat(request , room_name):
     print(request.user.member.profile_pic.url)
     data = {
@@ -111,5 +113,6 @@ def chat(request , room_name):
         'profile_pic':request.user.member.profile_pic.url
         }
     return render(request,'core/chat.html',data)
+@login_required
 def room(request):
     return render(request,'core/room.html')
