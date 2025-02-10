@@ -251,10 +251,8 @@
         const profile_pic = JSON.parse(document.getElementById('profile_pic').textContent);
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
         console.log("roomName", roomName)
-        // var ws = new WebSocket(('wss://' + window.location.host + '/ws/chat/' + roomName + '/'));
-
         const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-        const wsUrl = `${protocol}${window.location.host}/ws/chat/backgate/`;
+        const wsUrl = `${protocol}${window.location.host}/ws/chat/${roomName}/`;
         const ws = new WebSocket(wsUrl);
 
         // const ws = new WebSocket("wss://dipeshacharya.tech/ws/chat/backgate/");
