@@ -5,7 +5,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django_resized import ResizedImageField
+from django_resized import ResizedImageField 
 
 
 class Member(models.Model):
@@ -44,18 +44,21 @@ def save_member(sender, instance, **kwargs):
 class Posts(models.Model):
     member = models.ForeignKey(Member , on_delete=models.CASCADE  )
     description = models.TextField(max_length=200)
-    post_picture = models.ImageField(
-        upload_to="post_images/", null=True, blank=True , default='')
+    post_picture = ResizedImageField(
+        upload_to="post_images/", null=True, blank=True , default='' )
+    post_video = models.FileField(
+        upload_to="post_videos/", null=True, blank=True , default='')
     date_created = models.DateTimeField(auto_now_add=True, null=True)
     def __str__(self):
         return self.description
     
-class Chat(models.Model):
-    member = models.ForeignKey(Member , on_delete=models.CASCADE  )
-    message = models.TextField(max_length=200)
-    post_picture = models.ImageField(
-        upload_to="chat_images/", null=True, blank=True , default='')
-    date_created = models.DateTimeField(auto_now_add=True, null=True)
-    def __str__(self):
-        return self.message
+
+class ChatMessage(models.Model):
+    room_name = models.CharField(max_length=100)
+    sender = models.ForeignKey(Member , on_delete=models.CASCADE  )
+    message = models.TextField(blank=True, null=True)  # Optional if sending files
+    file = models.FileField(upload_to='chat_files/', blank=True, null=True)  # Store file URL
+    timestamp = models.DateTimeField(auto_now_add=True)
     
+    def __str__(self):
+        return self.message if self.message else self.file.name

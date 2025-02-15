@@ -36,7 +36,15 @@
                     {% csrf_token %}
                     <textarea name="description" id="textArea" required class="textArea"
                         placeholder="What's On Your Mind"></textarea>
-                    <input type="file" id="post_picture" name="post_picture" accept="image/*">
+                    <input type="file" id="post_picture" name="post_picture" accept="image/*" style="display: none;"
+                        onchange="previewFile(this, 'imagePreview');">
+                    <input type="file" id="post_video" name="post_video" accept="video/*" style="display: none;"
+                        onchange="previewFile(this, 'videoPreview');">
+
+                    <div id="previewWrapper">
+                        <div id="imagePreview" class="previewContainer"></div>
+                        <div id="videoPreview" class="previewContainer"></div>
+                    </div>
 
             </div>
         </div>
@@ -44,12 +52,11 @@
             <p class="bottomText">Add To Your Post</p>
             <div class="icons">
 
-                <i class="fa-solid fa-photo-film" title="photo/video"></i>
-                <i class="fa-solid fa-user-tag" title="tag friends"></i>
-                <i class="fa-solid fa-face-smile" title="feeling/activity"></i>
-                <i class="fa-solid fa-location-dot" title="location"></i>
-                <i class="fa-solid fa-flag" title="life events"></i>
-                <i class="fa-solid fa-circle-caret-down"></i>
+                <i class="fa-solid fa-photo-film" title="photo"
+                    onclick="document.getElementById('post_picture').click();"></i>
+                <i class="fa-solid fa-video" title="video" style="color: green;"
+                    onclick="document.getElementById('post_video').click();"></i>
+
             </div>
         </div>
         <div class="createPost-button">
@@ -57,7 +64,6 @@
         </div>
     </div>
     </form>
-
 
 
     <section id="searchBar" class="searchBar">
@@ -129,9 +135,18 @@
                     </div>
 
                     <div class="photoContainer">
-                        {% if post.post_picture %}
-                        <img src="{{post.post_picture.url}}">
+                        {% if post.post_picture and post.post_video %}
+                        <div class="collage">
+                            <img src="{{ post.post_picture.url }}" class="collage-image">
+                            <video src="{{ post.post_video.url }}" controls class="collage-video"></video>
+                        </div>
                         {% else %}
+                        {% if post.post_picture %}
+                        <img src="{{ post.post_picture.url }}">
+                        {% endif %}
+                        {% if post.post_video %}
+                        <video src="{{ post.post_video.url }}" controls></video>
+                        {% endif %}
                         {% endif %}
                     </div>
                     <div class="reactIcons">
@@ -170,5 +185,37 @@
 
 
 </body>
+
+<script>
+
+
+    function previewFile(input, previewId) {
+        const previewContainer = document.getElementById(previewId);
+        previewContainer.innerHTML = '';
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.maxWidth = '100px';
+                    img.style.maxHeight = '100px';
+                    img.style.display = 'inline-block';
+                    previewContainer.appendChild(img);
+                } else if (file.type.startsWith('video/')) {
+                    const video = document.createElement('video');
+                    video.src = e.target.result;
+                    video.controls = true;
+                    video.style.maxWidth = '100px';
+                    video.style.maxHeight = '100px';
+                    video.style.display = 'inline-block';
+                    previewContainer.appendChild(video);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+</script>
 
 </html>

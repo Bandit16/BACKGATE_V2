@@ -2,9 +2,10 @@
 from django.shortcuts import redirect, render
 from core.filters import PostFilter
 from .forms import MemberForm
-from .models import Member , Posts , Chat
+from .models import Member , Posts , ChatMessage
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 # Create your views here.
 
 
@@ -70,10 +71,14 @@ def post(request):
             print('member')
             description = request.POST.get('description')
             post_picture = request.FILES.get('post_picture')
+            post_video = request.FILES.get('post_video')
+            
             new_post = Posts.objects.create(
                 member=member,
                 description=description,
-                post_picture=post_picture
+                post_picture=post_picture,
+                post_video=post_video
+
             )
            
 
@@ -116,3 +121,19 @@ def chat(request , room_name):
 @login_required
 def room(request):
     return render(request,'core/room.html')
+
+@login_required
+def upload_file(request):
+    if request.method == 'POST' and request.FILES.get('file'):
+        file = request.FILES['file']
+        sender_username = request.user.username
+        room_name = request.POST.get('room_name', 'backgate')  # default value is backgate
+
+        # Retrieve the Member instance
+        sender = Member.objects.get(user__username=sender_username)
+
+        chat_message = ChatMessage(file=file, sender=sender, room_name=room_name)
+        chat_message.save()
+        print(chat_message.file.url)
+        return JsonResponse({'url': chat_message.file.url})
+    return JsonResponse({'error': 'Invalid request'}, status=400)

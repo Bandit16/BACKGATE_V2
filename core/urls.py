@@ -8,5 +8,6 @@ urlpatterns = [
     path('delete_post/<id>',views.post_delete,name="post_delete"),
     path('room/',views.room , name='room'),
     path("chat/<str:room_name>/", views.chat, name="room"),
+    path('upload-file/', views.upload_file, name='upload_file'),
 
 ]

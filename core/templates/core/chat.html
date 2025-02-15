@@ -19,7 +19,6 @@
                     <i class="fas fa-comment-alt"></i>
                     {{ room_name|upper }}
                     {{ room_name|json_script:"room-name" }}
-
                 </div>
             </a>
             <div class="msger-header-options">
@@ -62,10 +61,29 @@
         </main>
 
         <div class="msger-inputarea">
+            <button type="button" class="msger-file-btn" id="file-send">Send File</button>
             <input type="text" class="msger-input" id="send-text" placeholder="Enter your message...">
             <button type="submit" class="msger-send-btn" id="value-send">Send</button>
+            <input type="file" id="file-input" style="display: none;">
         </div>
     </section>
+
+    <style>
+        .msger-file-btn {
+            background: rgb(0, 123, 255);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+
+            transition: background 0.23s;
+        }
+
+        .msger-file-btn:hover {
+            background: rgb(0, 105, 217);
+        }
+    </style>
+
     <style>
         :root {
             --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -238,94 +256,169 @@
     </style>
 
     <script>
-        var today = new Date();
-        var hours = today.getHours();
-        var minutes = today.getMinutes();
-        var ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12; // the hour '0' should be '12'
-        minutes = minutes < 10 ? '0' + minutes : minutes;
-        var time = hours + ':' + minutes + ' ' + ampm;
+        // var today = new Date();
+        // var hours = today.getHours();
+        // var minutes = today.getMinutes();
+        // var ampm = hours >= 12 ? 'PM' : 'AM';
+        // hours = hours % 12 || 12; // Convert 0 to 12
+        // minutes = minutes < 10 ? '0' + minutes : minutes;
+        // var time = hours + ':' + minutes + ' ' + ampm;
+
         const username = JSON.parse(document.getElementById('username').textContent);
-        console.log("string username", username)
         const profile_pic = JSON.parse(document.getElementById('profile_pic').textContent);
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
-        console.log("roomName", roomName)
+
         const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
         const wsUrl = `${protocol}${window.location.host}/ws/chat/${roomName}/`;
         const ws = new WebSocket(wsUrl);
 
-        // const ws = new WebSocket("wss://dipeshacharya.tech/ws/chat/backgate/");
         const containerEl = document.querySelector(".msger-chat");
+
         ws.onopen = function (event) {
-            console.log("openes")
-        }
+            console.log("WebSocket Opened");
+
+        };
+
         ws.onmessage = function (event) {
-            console.log("message received", event)
-            parsed_data = JSON.parse(event.data)
-            message = parsed_data.message
-            sender_profile_pic = parsed_data.profile_pic
-            console.log("message parsed", parsed_data)
-            console.log("profilepic", parsed_data.profile_pic)
-            let new_element = `
-            <div class="msg left-msg">
-                <div class="msg-img" style="background-image: url(${sender_profile_pic})">
-                </div>
-
-                <div class="msg-bubble">
-                    <div class="msg-info">
-                        <div class="msg-info-name">${parsed_data.username}</div>
-                        <div class="msg-info-time">${time}</div>
-                    </div>
-
-                    <div class="msg-text" id="textarea">
-                        ${message}
-                    </div>
-                </div>
-            </div>
-            `
-            if (parsed_data.username !== username) {
-                containerEl.insertAdjacentHTML("beforeend", new_element);
-                containerEl.scrollTop += 500;
+            const parsed_data = JSON.parse(event.data);
+            console.log(parsed_data);
+            const { message, file, username: sender, profile_pic: sender_profile_pic, timestamp: timestamp } = parsed_data;
+            function convertToNepalTime(utcTimestamp) {
+                const date = new Date(utcTimestamp);
+                return date.toLocaleString("en-US", {
+                    timeZone: "Asia/Kathmandu",
+                    hour12: true
+                });
             }
-        }
-        ws.onerror = function (event) {
-            console.log("message error")
-        }
-        ws.onclose = function (event) {
-            console.log("closed", event)
-        }
+            const time = convertToNepalTime(timestamp);
+            let new_element;
+            if (file) {
+                new_element = generateFileMessage(sender, sender_profile_pic, file, time);
+            } else {
+                new_element = generateTextMessage(sender, sender_profile_pic, message, time);
+            }
+
+
+            containerEl.insertAdjacentHTML("beforeend", new_element);
+            containerEl.scrollTop = containerEl.scrollHeight;
+
+
+        };
+
+        ws.onerror = function () {
+            console.log("WebSocket Error");
+        };
+
+        ws.onclose = function () {
+            console.log("WebSocket Closed");
+        };
+
         document.querySelector('#send-text').onkeyup = function (e) {
-            if (e.keyCode === 13) {  // enter, return
+            if (e.keyCode === 13) {  // Enter key
                 document.querySelector('#value-send').click();
             }
         };
-        document.getElementById('value-send').onclick = function (event) {
 
-            const textdom = document.getElementById('send-text')
-            const message = textdom.value
-            let new_element = `
-            <div class="msg right-msg">
-                <div class="msg-img" style="background-image: url(${profile_pic})">
-                </div>
+        document.getElementById('value-send').onclick = function () {
+            const textdom = document.getElementById('send-text');
+            const message = textdom.value;
 
-                <div class="msg-bubble">
-                    <div class="msg-info">
-                        <div class="msg-info-name">${username}</div>
-                        <div class="msg-info-time">${time}</div>
-                    </div>
 
-                    <div class="msg-text" id="textarea">
-                        ${message}
-                    </div>
-                </div>
-            </div>
-            `
-            containerEl.insertAdjacentHTML("beforeend", new_element);
-            containerEl.scrollTop += 500;
 
             ws.send(JSON.stringify({ 'message': message, 'username': username, 'profile_pic': profile_pic }));
-            textdom.value = ''
+            textdom.value = '';
+        };
+
+        document.getElementById('file-send').onclick = function () {
+            document.getElementById('file-input').click();
+        };
+
+        document.getElementById('file-input').onchange = function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append("file", file);
+
+                // Get CSRF token from the cookie
+                const csrftoken = getCookie('csrftoken');
+
+                fetch("/upload-file/", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-CSRFToken": csrftoken
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        ws.send(JSON.stringify({
+                            'message': null,  // Send null message when uploading a file
+                            'file': data.url,
+                            'username': username,
+                            'profile_pic': profile_pic
+                        }));
+
+                        // let new_element = generateFileMessage(username, profile_pic, data.url);
+                        // containerEl.insertAdjacentHTML("beforeend", new_element);
+                        containerEl.scrollTop = containerEl.scrollHeight;
+                    })
+                    .catch(error => console.error("Upload failed", error));
+            }
+        };
+
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function generateTextMessage(sender, sender_profile_pic, message, time) {
+            return `
+    <div class="msg ${sender === username ? 'right-msg' : 'left-msg'}">
+        <div class="msg-img" style="background-image: url(${sender_profile_pic})"></div>
+        <div class="msg-bubble">
+            <div class="msg-info">
+                <div class="msg-info-name">${sender}</div>
+                <div class="msg-info-time">${time}</div>
+            </div>
+            <div class="msg-text">${message}</div>
+        </div>
+    </div>`;
+        }
+
+        function generateFileMessage(sender, sender_profile_pic, file, time) {
+            const fileType = file.split('.').pop().toLowerCase();
+            let fileContent;
+
+            if (['png', 'jpg', 'jpeg', 'gif'].includes(fileType)) {
+                fileContent = `<img src="${file}" width="200" style="border-radius: 10px;">`;
+            } else if (['mp4', 'webm', 'ogg'].includes(fileType)) {
+                fileContent = `<video controls width="200"><source src="${file}"></video>`;
+            } else {
+                fileContent = `<a href="${file}" download>Download File</a>`;
+            }
+
+            return `
+    <div class="msg ${sender === username ? 'right-msg' : 'left-msg'}">
+        <div class="msg-img" style="background-image: url(${sender_profile_pic})"></div>
+        <div class="msg-bubble">
+            <div class="msg-info">
+                <div class="msg-info-name">${sender}</div>
+                <div class="msg-info-time">${time}</div>
+            </div>
+            <div class="msg-text">${fileContent}</div>
+        </div>
+    </div>`;
         }
     </script>
 

@@ -5,4 +5,4 @@ from .models import *
 
 admin.site.register(Member)
 admin.site.register(Posts)
-admin.site.register(Chat)
+admin.site.register(ChatMessage)
