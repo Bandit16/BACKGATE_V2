@@ -15,8 +15,10 @@ from channels.security.websocket import AllowedHostsOriginValidator
 from django.core.asgi import get_asgi_application
 
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'BACKGATE_V2.settings')
-
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'BACKGATE_V2.settingsprod')
+import django
+django.setup()
+from core.routing import websocket_urlpatterns
 
 from core.routing import websocket_urlpatterns
 
