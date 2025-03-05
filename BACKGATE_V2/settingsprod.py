@@ -200,7 +200,8 @@ SITE_ID = 1
 
 CSRF_TRUSTED_ORIGINS = [
     'https://pleasing-guppy-hardy.ngrok-free.app',
-    'https://dipeshacharya.tech'
+    'https://dipeshacharya.tech',
+    'https://backgate.tech/',
 ]
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'https://dipeshacharya.tech/google/login/callback/'
