@@ -1,8 +1,23 @@
 {% load static %}
+
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://kit.fontawesome.com/74f59d5ad7.js" crossorigin="anonymous"></script>
+    <!-- ?Use of swiper css link -->
+    <!-- ?Swiper JavaScript link -->
+    <!-- !Font Awesome Link -->
+    <script src="https://kit.fontawesome.com/74f59d5ad7.js" crossorigin="anonymous"></script>
+
+    <title>Room</title>
+    <link rel="stylesheet" href="{% static 'core/home.css' %}" />
+    <script src="{% static 'core/home.js' %}" defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,10 +28,40 @@
     <title>BackGate</title>
     <link rel="stylesheet" href="{% static 'core/post.css' %}" />
     <script src="{% static 'core/post.js' %}" defer></script>
-
 </head>
 
-<body class="">
+<body>
+    <!--! Navigation Bar Starts -->
+    <section class="header">
+        <div class="navbar">
+            <a href=""><i class="fa-solid fa-torii-gate gate"></i><img src="{% static 'core/logo.svg' %} "
+                    alt="logo" /></a>
+
+            <nav id="navItems">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="#members">Members</a>
+                <a href="{% url 'post' %}">Posts</a>
+                <a href="{% url 'room' %}" class="active">Chat</a>
+
+                {% if user.is_anonymous %}
+                <a href="{% url 'account_login' %}">login</a>
+                {% else %}
+                <a href="{% url 'accountSettings' %}" style="color: rgb(231, 53, 225);">Hello! {{user}}</a>
+                <!-- <img src="{{request.user.customer.profile_pic.url}}" alt=""> -->
+
+
+                {% endif %}
+            </nav>
+
+            <i class="fa-solid fa-bars icons" id="menu"></i>
+        </div>
+    </section>
+
+
+
+    </head>
+
+
 
     <div id="createPost" class="active">
         <div class="createPost-top">
@@ -184,38 +229,37 @@
     </section>
 
 
-</body>
 
-<script>
+    <script>
 
 
-    function previewFile(input, previewId) {
-        const previewContainer = document.getElementById(previewId);
-        previewContainer.innerHTML = '';
-        const file = input.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                if (file.type.startsWith('image/')) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.style.maxWidth = '100px';
-                    img.style.maxHeight = '100px';
-                    img.style.display = 'inline-block';
-                    previewContainer.appendChild(img);
-                } else if (file.type.startsWith('video/')) {
-                    const video = document.createElement('video');
-                    video.src = e.target.result;
-                    video.controls = true;
-                    video.style.maxWidth = '100px';
-                    video.style.maxHeight = '100px';
-                    video.style.display = 'inline-block';
-                    previewContainer.appendChild(video);
-                }
-            };
-            reader.readAsDataURL(file);
+        function previewFile(input, previewId) {
+            const previewContainer = document.getElementById(previewId);
+            previewContainer.innerHTML = '';
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    if (file.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.maxWidth = '100px';
+                        img.style.maxHeight = '100px';
+                        img.style.display = 'inline-block';
+                        previewContainer.appendChild(img);
+                    } else if (file.type.startsWith('video/')) {
+                        const video = document.createElement('video');
+                        video.src = e.target.result;
+                        video.controls = true;
+                        video.style.maxWidth = '100px';
+                        video.style.maxHeight = '100px';
+                        video.style.display = 'inline-block';
+                        previewContainer.appendChild(video);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
         }
-    }
-</script>
+    </script>
 
 </html>

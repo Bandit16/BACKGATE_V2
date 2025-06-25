@@ -16,6 +16,7 @@
 
     <title>BackGate</title>
     <link rel="stylesheet" href="{% static 'core/home.css' %}" />
+    <link rel="stylesheet" href="{% static 'core/post.css' %}" />
     <script src="{% static 'core/home.js' %}" defer></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
@@ -30,6 +31,7 @@
             <nav id="navItems">
                 <a href="#" class="active">Home</a>
                 <a href="#members">Members</a>
+                <a href="{% url 'transaction_list' %}">Accounts</a>
                 <a href="{% url 'post' %}">Posts</a>
                 <a href="{% url 'room' %}">Chat</a>
 
@@ -119,10 +121,10 @@
         <h1 class="heading">Latest Posts</h1>
 
 
-        <div class="postContainer">
+        <div class="postContainer"
+            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: fit-content;">
 
             {% for post in posts %}
-
 
             <div class="post post1">
                 <div class="top">
@@ -142,40 +144,45 @@
                     </div>
                 </div>
 
-
-
-                <div class="bottom">
-                    <div class="postTitle">
+                <div class="bottom" style="margin-top: 10px;">
+                    <div class="postTitle" style="margin-bottom: 10px;">
                         {{post.description}}
                     </div>
 
-                    <div class="photoContainer">
-                        {% if post.post_picture %}
-                        <img src="{{post.post_picture.url}}">
+                    <div class="photoContainer" style="margin-bottom: 10px;">
+                        {% if post.post_picture and post.post_video %}
+                        <div class="collage" style="display: flex; gap: 10px;">
+                            <img src="{{ post.post_picture.url }}" class="collage-image" style="width: 50%;">
+                            <video src="{{ post.post_video.url }}" controls class="collage-video"
+                                style="width: 50%;"></video>
+                        </div>
                         {% else %}
-                        <img src="/static/default.png">
+                        {% if post.post_picture %}
+                        <img src="{{ post.post_picture.url }}" style="width: 100%; border-radius: 5px;">
+                        {% endif %}
+                        {% if post.post_video %}
+                        <video src="{{ post.post_video.url }}" controls
+                            style="width: 100%; border-radius: 5px;"></video>
+                        {% endif %}
                         {% endif %}
                     </div>
-                    <div class="reactIcons">
 
+                    <div class="reactIcons" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
                         <i class="fa-sharp fa-solid fa-thumbs-up"></i>
                         <i class="fa-sharp fa-solid fa-heart"></i>
-                        <p class="text">You and {{post.description|wordcount}} others</p>
-
-
-
+                        <p class="text" style="margin: 0;">You and {{post.description|wordcount}} others</p>
                     </div>
+
                     <div class="reactAndCommentContainer">
                         <button class="reactButton"><i class="fa-regular fa-thumbs-up"></i>React</button>
-                        <button class="commentButton"><i class="fa-regular fa-comment"></i>Comments</button>
+                        <button class="commentButton"><i class="fa-regular fa-comment"><a
+                                    href="{% url 'home' %}"></i>Comments</button></a>
 
                     </div>
                 </div>
             </div>
+
             {% endfor %}
-
-
-
 
         </div>
         <div class="loadmore">

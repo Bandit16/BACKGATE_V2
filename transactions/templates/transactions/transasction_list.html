@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4B0082;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(75, 0, 130, 0.2);
+            border-radius: 5px;
+            min-width: 900px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #6A0DAD;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .actions {
+            text-align: center;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            text-decoration: none;
+            color: white;
+            border-radius: 4px;
+            margin: 0 5px;
+            font-size: 14px;
+        }
+
+        .btn-edit {
+            background-color: #7B68EE;
+        }
+
+        .btn-edit:hover {
+            background-color: #5A4FCF;
+        }
+
+        .btn-create {
+            background-color: #9370DB;
+        }
+
+        .btn-create:hover {
+            background-color: #7A5DC7;
+        }
+
+        .links {
+            margin: 20px 0;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .links a {
+            text-decoration: none;
+            color: #6A0DAD;
+            font-size: 15px;
+            background: #fff;
+            border: 1px solid #6A0DAD;
+            border-radius: 5px;
+            padding: 8px 16px;
+            transition: background 0.2s, color 0.2s;
+            margin: 5px 0;
+            display: inline-block;
+        }
+
+        .links a:hover {
+            background: #6A0DAD;
+            color: #fff;
+        }
+
+        .tick {
+            color: #4B0082;
+            font-weight: bold;
+        }
+
+        @media (max-width: 900px) {
+            .table-container {
+                margin: 10px 0;
+            }
+
+            table {
+                min-width: 600px;
+                font-size: 13px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                margin: 5px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .links {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            table {
+                font-size: 11px;
+                min-width: 400px;
+            }
+
+            th,
+            td {
+                padding: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Transaction List</h1>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Paid By</th>
+                    <th>Initiated By</th>
+                    <th>Transaction Type</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Group Name</th>
+                    {% for member in all_members %}
+                    <th>{{ member.user.username }}</th>
+                    {% endfor %}
+                    <th>Involved Members</th>
+                    {% for member in all_members %}
+                    <th>{{ member.user.username }} Involved</th>
+                    {% endfor %}
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.transaction_id }}</td>
+                    <td>{{ transaction.paid_by.user.username }}</td>
+                    <td>{{ transaction.initiated_by.user.username }}</td>
+                    <td>{{ transaction.transaction_type }}</td>
+                    <td>{{ transaction.amount }}</td>
+                    <td>{{ transaction.date }}</td>
+                    <td>{{ transaction.description }}</td>
+                    <td>{{ transaction.group.name }}</td>
+                    {% for member in all_members %}
+                    <td>
+                        {% if member in transaction.involved_members.all %}
+                        <span class="tick">✔</span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td>
+                        {% for member in transaction.involved_members.all %}
+                        {{ member.user.username }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    {% for member in all_members %}
+                    <td>
+                        {% if member in transaction.involved_members.all %}
+                        Yes
+                        {% else %}
+                        No
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td class="actions">
+                        {% if transaction.initiated_by.user == request.user %}
+                        <a href="{% url 'edit_transaction' transaction.transaction_id %}" class="btn btn-edit">Edit</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="links">
+        <a href="{% url 'create_transaction' %}" class="btn-create">Create New Transaction</a>
+        {% for group in groups %}
+        <a href="{% url 'make_payment' group.id %}">Make Payment to a Member in group {{ group }}</a>
+        <a href="{% url 'group_liability' group.id %}">Show Group Liabilities for {{ group }}</a>
+        {% endfor %}
+        <a href="{% url 'transaction_list' %}">Transaction List</a>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'user_liability' request.user.member.id %}">User Liability</a>
+    </div>
+</body>
+
+</html>

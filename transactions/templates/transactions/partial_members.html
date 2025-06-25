@@ -1,0 +1,27 @@
+{% if is_paid_by %}
+<label for="paid_by">Paid By</label>
+<select name="paid_by" id="paid_by" class="form-select">
+    {% for member in members %}
+    <option value="{{ member.id }}">{{ member.user.username }}</option>
+    {% endfor %}
+</select>
+{% else %}
+<label>Involved Members</label>
+{% for member in members %}
+<div class="form-check">
+    <input class="form-check-input" type="checkbox" name="involved_members" value="{{ member.id }}"
+        id="member-{{ member.id }}">
+    <label class="form-check-label" for="member-{{ member.id }}">
+        {{ member.user.username }}
+    </label>
+</div>
+{% endfor %}
+<button type="button" class="btn btn-sm btn-secondary mt-2" id="involve-all-btn">Involve All</button>
+<script>
+    document.getElementById('involve-all-btn').addEventListener('click', function () {
+        document.querySelectorAll('input[name="involved_members"]').forEach(function (checkbox) {
+            checkbox.checked = true;
+        });
+    });
+</script>
+{% endif %}

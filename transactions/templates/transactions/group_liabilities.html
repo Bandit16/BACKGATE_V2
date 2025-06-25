@@ -1,0 +1,543 @@
+<title>Transaction List</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f4f9;
+        color: #4B0082;
+        /* Base color: Purple */
+    }
+
+    h1 {
+        text-align: center;
+        color: #4B0082;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(75, 0, 130, 0.2);
+    }
+
+    th,
+    td {
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #6A0DAD;
+        color: white;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .actions {
+        text-align: center;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        text-decoration: none;
+        color: white;
+        border-radius: 4px;
+        margin: 0 5px;
+    }
+
+    .btn-edit {
+        background-color: #7B68EE;
+    }
+
+    .btn-edit:hover {
+        background-color: #5A4FCF;
+    }
+
+    .btn-create {
+        background-color: #9370DB;
+    }
+
+    .btn-create:hover {
+        background-color: #7A5DC7;
+    }
+
+    .links {
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .links a {
+        margin: 0 10px;
+        text-decoration: none;
+        color: #7B68EE;
+    }
+
+    .links a:hover {
+        text-decoration: underline;
+    }
+
+    .tick {
+        color: #4B0082;
+        font-weight: bold;
+    }
+
+    .positive {
+        color: red;
+    }
+
+    .negative {
+        color: green;
+
+
+    }
+
+    .links {
+        margin: 20px 0;
+        text-align: center;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .links a {
+        text-decoration: none;
+        color: #6A0DAD;
+        font-size: 15px;
+        background: #fff;
+        border: 1px solid #6A0DAD;
+        border-radius: 5px;
+        padding: 8px 16px;
+        transition: background 0.2s, color 0.2s;
+        margin: 5px 0;
+        display: inline-block;
+    }
+
+    .links a:hover {
+        background: #6A0DAD;
+        color: #fff;
+    }
+</style>
+<!-- Add this -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    </table>
+    <h1>Liabilities for Group: {{ group.name }}</h1>
+    <div class="chart-section">
+        <h2>Transaction Analysis for {{ group.name }}</h2>
+        <div class="chart-container">
+            <canvas id="transactionChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Total Liability </th>
+                <th>Total Payments </th>
+                <th>Net Liability</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for liability in liabilities %}
+            <tr>
+                <td>
+                    <a href="{% url 'user_liability' liability.user.user.member.id %}"
+                        style="text-decoration: none; color: #4B0082; box-shadow: none;">
+                        {{ liability.user.user.username }}
+                    </a>
+                </td>
+                <td class="{% if liability.total_liability > 0 %}positive{% else %}negative{% endif %}">
+                    {{ liability.total_liability | floatformat:2 }}
+                </td>
+                <td class="{% if liability.total_payments > 0 %}positive{% else %}negative{% endif %}">
+                    {{ liability.total_payments | floatformat:2 }}
+                </td>
+                <td class="{% if liability.net_liability > 0 %}positive{% else %}negative{% endif %}">
+                    {{ liability.net_liability | floatformat:2 }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+
+    <h1>Transaction List</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Paid By</th>
+                <th>Initiated By</th>
+                <th>Transaction Type</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Group Name</th>
+                {% for member in all_members %}
+                <th>{{ member.user.username }}</th>
+                {% endfor %}
+                <th>Involved Members</th>
+                {% for member in all_members %}
+                <th>{{ member.user.username }} Involved</th>
+                {% endfor %}
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.transaction_id }}</td>
+                <td>{{ transaction.paid_by.user.username }}</td>
+                <td>{{ transaction.initiated_by.user.username }}</td>
+                <td>{{ transaction.transaction_type }}</td>
+                <td class="{% if transaction.amount > 0 %}positive{% else %}negative{% endif %}">
+                    {{ transaction.amount }}
+                </td>
+                <td>{{ transaction.date }}</td>
+                <td>{{ transaction.description }}</td>
+                <td>{{ transaction.group.name }}</td>
+                {% for member in all_members %}
+                <td>
+                    {% if member in transaction.involved_members.all %}
+                    <span class="tick">✔</span>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                {% endfor %}
+                <td>
+                    {% for member in transaction.involved_members.all %}
+                    {{ member.user.username }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                {% for member in all_members %}
+                <td>
+                    {% if member in transaction.involved_members.all %}
+                    Yes
+                    {% else %}
+                    No
+                    {% endif %}
+                </td>
+                {% endfor %}
+                <td class="actions">
+                    {% if transaction.initiated_by.user == request.user %}
+                    <a href="{% url 'edit_transaction' transaction.transaction_id %}" class="btn btn-edit">Edit</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+
+    <style>
+        .summary-section {
+            margin: 30px auto;
+            max-width: 600px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(75, 0, 130, 0.15);
+            padding: 24px 32px;
+            color: #4B0082;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .summary-section h2 {
+            color: #6A0DAD;
+            margin-bottom: 18px;
+        }
+
+        .summary-section span {
+            font-weight: bold;
+            color: #7B68EE;
+        }
+    </style>
+</body>
+</div>
+<div class="summary-section">
+    <h2>Group Summary</h2>
+    <p>Total Group Liability: <span>{{ total_group_liability | floatformat:2 }}</span></p>
+    <p>Total Group Payments: <span>{{ total_group_payments | floatformat:2 }}</span></p>
+    <p>Net Group Liability: <span>{{ net_group_liability| floatformat:2 }}</span></p>
+</div>
+<div class="links">
+    <a href="{% url 'create_transaction' %}" class="btn btn-create">Create New Transaction</a>
+    <a href="{% url 'transaction_list' %}" class="btn btn-create">Transaction List</a>
+    <a href="{% url 'home' %}" class="btn btn-create">Home</a>
+    <a href="{% url 'make_payment' group.id %}">Make payment for {{group}}</a>
+    <a href="{% url 'user_liability' request.user.member.id %}" class="btn btn-create">User Liability</a>
+</div>
+
+<script>
+    let chart = null;
+
+    // Initialize chart
+    function initChart() {
+        const ctx = document.getElementById('transactionChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                        '#9966FF', '#FF9F40', '#FF6B6B', '#4ECDC4',
+                        '#95A5A6', '#F39C12'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Spending by Transaction Type',
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        },
+                        color: '#6A0DAD'
+                    },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: Rs ${value.toFixed(2)} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Load transaction data from the page
+    function loadTransactionData() {
+        const transactionData = {};
+        const typeMapping = {}; // To store original case for display
+
+        // Extract data from the existing transaction table
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length > 4) {
+                const transactionType = cells[3].textContent.trim();
+                const amount = parseFloat(cells[4].textContent.trim()) || 0;
+
+                if (transactionType && amount > 0) {
+                    // Convert to lowercase for comparison
+                    const lowerCaseType = transactionType.toLowerCase();
+
+                    // Store the first occurrence's original case for display
+                    if (!typeMapping[lowerCaseType]) {
+                        typeMapping[lowerCaseType] = transactionType;
+                    }
+
+                    // Aggregate amounts using lowercase key
+                    transactionData[lowerCaseType] = (transactionData[lowerCaseType] || 0) + amount;
+                }
+            }
+        });
+
+        // Update chart with the data
+        if (Object.keys(transactionData).length > 0) {
+            // Use original case for labels but lowercase for data aggregation
+            const labels = Object.keys(transactionData).map(key => typeMapping[key]);
+            const amounts = Object.values(transactionData);
+
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = amounts;
+            chart.update();
+        } else {
+            // Show message if no data
+            chart.data.labels = ['No Data'];
+            chart.data.datasets[0].data = [1];
+            chart.data.datasets[0].backgroundColor = ['#E0E0E0'];
+            chart.update();
+        }
+    }
+
+    // Initialize when page loads
+    $(document).ready(function () {
+        initChart();
+        loadTransactionData();
+    });
+</script>
+
+<!-- <script>
+    let chart = null;
+
+    // Initialize chart
+    function initChart() {
+        const ctx = document.getElementById('transactionChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Amount (Rs)',
+                    data: [],
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                        '#9966FF', '#FF9F40', '#FF6B6B', '#4ECDC4',
+                        '#95A5A6', '#F39C12'
+                    ],
+                    borderColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                        '#9966FF', '#FF9F40', '#FF6B6B', '#4ECDC4',
+                        '#95A5A6', '#F39C12'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 5,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Spending by Transaction Type',
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        },
+                        color: '#6A0DAD'
+                    },
+                    legend: {
+                        display: false // Hide legend for bar chart
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = context.parsed.y || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: Rs ${value.toFixed(2)} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Amount (Rs)',
+                            color: '#6A0DAD',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            callback: function (value) {
+                                return 'Rs ' + value.toFixed(0);
+                            }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Transaction Type',
+                            color: '#6A0DAD',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Load transaction data from the page
+    function loadTransactionData() {
+        const transactionData = {};
+        const typeMapping = {}; // To store original case for display
+
+        // Extract data from the existing transaction table
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length > 4) {
+                const transactionType = cells[3].textContent.trim();
+                const amount = parseFloat(cells[4].textContent.trim()) || 0;
+
+                if (transactionType && amount > 0) {
+                    // Convert to lowercase for comparison
+                    const lowerCaseType = transactionType.toLowerCase();
+
+                    // Store the first occurrence's original case for display
+                    if (!typeMapping[lowerCaseType]) {
+                        typeMapping[lowerCaseType] = transactionType;
+                    }
+
+                    // Aggregate amounts using lowercase key
+                    transactionData[lowerCaseType] = (transactionData[lowerCaseType] || 0) + amount;
+                }
+            }
+        });
+
+        // Update chart with the data
+        if (Object.keys(transactionData).length > 0) {
+            // Use original case for labels but lowercase for data aggregation
+            const labels = Object.keys(transactionData).map(key => typeMapping[key]);
+            const amounts = Object.values(transactionData);
+
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = amounts;
+            chart.update();
+        } else {
+            // Show message if no data
+            chart.data.labels = ['No Data'];
+            chart.data.datasets[0].data = [1];
+            chart.data.datasets[0].backgroundColor = ['#E0E0E0'];
+            chart.update();
+        }
+    }
+
+    // Initialize when page loads
+    $(document).ready(function () {
+        initChart();
+        loadTransactionData();
+    });
+</script> -->

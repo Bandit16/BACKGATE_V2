@@ -1,46 +1,168 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://kit.fontawesome.com/74f59d5ad7.js" crossorigin="anonymous"></script>
+    <!-- ?Use of swiper css link -->
+    <!-- ?Swiper JavaScript link -->
+    <!-- !Font Awesome Link -->
+    <script src="https://kit.fontawesome.com/74f59d5ad7.js" crossorigin="anonymous"></script>
+
+    <title>Room</title>
+    <link rel="stylesheet" href="{% static 'core/home.css' %}" />
+    <script src="{% static 'core/home.js' %}" defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 
 <body>
-    {% if user.is_authenticated %}
+    <!--! Navigation Bar Starts -->
+    <section class="header">
+        <div class="navbar">
+            <a href=""><i class="fa-solid fa-torii-gate gate"></i><img src="{% static 'core/logo.svg' %} "
+                    alt="logo" /></a>
 
-    <p>what room would you like to join?</p>
-    <input type="text" id="room_name">
-    <input type="submit" value="join" id="join">
-    {% else %}
-    <br>
-    <h3>If you are not LOGGED-IN Click here</h3>
-    <button id="myButton" style=" margin-left: 10px;
-            background: rgb(0, 196, 65);
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.23s;">LOG IN</button>
-    <script>
-        document.getElementById('myButton').addEventListener('click', function () {
-            window.location.pathname = 'login/'
-        });
-    </script>
-    {% endif %}
+            <nav id="navItems">
+                <a href="{% url 'home' %}">Home</a>
+                <a href="#members">Members</a>
+                <a href="{% url 'post' %}">Posts</a>
+                <a href="{% url 'room' %}" class="active">Chat</a>
 
-    <script>
-        document.getElementById('join').onclick = function (event) {
-            var room_name = document.getElementById('room_name').value
-            console.log('room name is ', room_name)
-            console.log('room name is ', window.location.pathname)
+                {% if user.is_anonymous %}
+                <a href="{% url 'account_login' %}">login</a>
+                {% else %}
+                <a href="{% url 'accountSettings' %}" style="color: rgb(231, 53, 225);">Hello! {{user}}</a>
+                <!-- <img src="{{request.user.customer.profile_pic.url}}" alt=""> -->
 
-            window.location.pathname = 'chat/' + room_name
+
+                {% endif %}
+            </nav>
+
+            <i class="fa-solid fa-bars icons" id="menu"></i>
+        </div>
+    </section>
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            font-size: 18px;
+            line-height: 1.6;
         }
 
-    </script>
 
-</body>
+        .card-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 50px);
+        }
+
+        .card {
+            background-color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border-radius: 12px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .card input[type="text"] {
+            padding: 10px;
+            width: calc(100% - 20px);
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .room-buttons {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .room-buttons button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            flex: 1 1 calc(50% - 10px);
+            max-width: 150px;
+        }
+
+        .room-buttons button:hover,
+        .card input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .card input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+        }
+    </style>
+    </head>
+
+    <body>
+
+        <span style="font-size: 1.5rem;">Room Selection</span>
+
+        <div class="card-container">
+            <div class="card">
+                <h2 style="font-size: 2.5rem;">Room Selection</h2>
+                <p style="font-size: 1.2rem;">What room would you like to join?</p>
+                <input type="text" id="room_name" placeholder="Enter room name">
+                <input type="submit" value="Join Room" onclick="joinRoom(document.getElementById('room_name').value)">
+                <label for="quick-links" style="font-size: 1.2rem; display: block; margin-top: 20px;">Quick
+                    Links:</label>
+                <div class="room-buttons">
+                    <button onclick="joinRoom('meeting')">Meeting</button>
+                    <button onclick="joinRoom('backgate')">Backgate</button>
+                    <button onclick="joinRoom('homework')">Homework</button>
+
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function joinRoom(roomName) {
+                if (roomName.trim() !== '') {
+                    window.location.pathname = `/chat/${roomName}`;
+                } else {
+                    alert('Please enter a room name!');
+                }
+            }
+        </script>
+
+    </body>
 
 </html>

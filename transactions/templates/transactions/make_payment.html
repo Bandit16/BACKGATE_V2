@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make Payment</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3e5f5;
+            color: #4a148c;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #6a1b9a;
+            text-align: center;
+        }
+
+        form {
+            background-color: #ede7f6;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #d1c4e9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #7b1fa2;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #4a148c;
+        }
+
+        a {
+            color: #6a1b9a;
+            text-decoration: none;
+            display: block;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .qr-code-preview {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            position: relative;
+            height: 150px;
+        }
+
+        .qr-code-preview img {
+            max-width: 150px;
+            max-height: 150px;
+            border: 1px solid #d1c4e9;
+            border-radius: 8px;
+            background: #fff;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .qr-code-preview img.active {
+            opacity: 1;
+        }
+
+        .loading-spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid #d1c4e9;
+            border-top: 3px solid #7b1fa2;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        /* Media Queries */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            form {
+                padding: 15px;
+                max-width: 100%;
+            }
+
+            input,
+            select,
+            button {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            form {
+                padding: 10px;
+            }
+
+            input,
+            select,
+            button {
+                font-size: 10px;
+                padding: 6px;
+            }
+
+            a {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Make Payment</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="recipient">Recipient:</label>
+        <select name="recipient" id="recipient" required onchange="updateQRCode()">
+            <option value="" disabled selected>Select a recipient</option>
+            {% for member in members %}
+            <option value="{{ member.id }}">{{ member.user.username }}</option>
+            {% endfor %}
+        </select>
+
+        <div class="qr-code-preview" id="qrCodePreview">
+            <div class="loading-spinner" id="loadingSpinner"></div>
+            {% for member in members %}
+            <img id="qr-{{ member.id }}" src="{{ member.qr_code.url }}" alt="QR Code for {{ member.user.username }}"
+                data-member-id="{{ member.id }}" class="qr-image">
+            {% endfor %}
+        </div>
+
+        <label for="amount">Amount:</label>
+        <input type="number" step="0.01" name="amount" id="amount" required>
+        <label for="description">Description:</label>
+        <input type="text" name="description" id="description">
+        <button type="submit">Submit Payment</button>
+    </form>
+
+    <a href="{% url 'create_transaction' %}">Create New Transaction</a>
+    <a href="{% url 'make_payment' group.id %}">Make Payment to a Member</a>
+    <a href="{% url 'group_liability' group.id %}">Group Liabilities</a>
+    <a href="{% url 'transaction_list' %}">Transaction List</a>
+    <a href="{% url 'create_transaction' %}">Create Transaction</a>
+    <a href="{% url 'home' %}">Home</a>
+    <input type="hidden" id="length" value="{{ members|length }}">
+    <script>
+        let imagesLoaded = 0;
+        let totalImages = parseInt(document.getElementById('length').value, 10);
+        let allImagesReady = false;
+
+        // Track image loading
+        function onImageLoad() {
+            imagesLoaded++;
+            if (imagesLoaded === totalImages) {
+                allImagesReady = true;
+                document.getElementById('loadingSpinner').style.display = 'none';
+                // Show first image if dropdown has a selection
+                updateQRCode();
+            }
+        }
+
+        // Add load event listeners to all images
+        document.addEventListener('DOMContentLoaded', function () {
+            const images = document.querySelectorAll('.qr-image');
+            const qrPreview = document.getElementById('qrCodePreview');
+
+            // Initially hide the QR preview container
+            qrPreview.style.height = '0px';
+            qrPreview.style.marginBottom = '0px';
+
+            if (images.length === 0) {
+                allImagesReady = true;
+                document.getElementById('loadingSpinner').style.display = 'none';
+                return;
+            }
+
+            // Show loading spinner
+            document.getElementById('loadingSpinner').style.display = 'block';
+
+            images.forEach(img => {
+                if (img.complete) {
+                    onImageLoad();
+                } else {
+                    img.addEventListener('load', onImageLoad);
+                    img.addEventListener('error', function () {
+                        console.warn('Failed to load QR image for member:', this.dataset.memberId);
+                        onImageLoad(); // Still count as "loaded" to prevent hanging
+                    });
+                }
+            });
+        });
+
+        function updateQRCode() {
+            const select = document.getElementById('recipient');
+            const selectedValue = select.value;
+            const qrPreview = document.getElementById('qrCodePreview');
+
+            // Hide all QR images
+            const allImages = document.querySelectorAll('.qr-image');
+            allImages.forEach(img => {
+                img.classList.remove('active');
+            });
+
+            // Show/hide the QR preview container based on selection
+            if (selectedValue && allImagesReady) {
+                const selectedImage = document.getElementById('qr-' + selectedValue);
+                if (selectedImage) {
+                    // Show the container and image
+                    qrPreview.style.height = '150px';
+                    qrPreview.style.marginBottom = '15px';
+                    selectedImage.classList.add('active');
+                }
+            } else {
+                // Hide the container when no selection
+                qrPreview.style.height = '0px';
+                qrPreview.style.marginBottom = '0px';
+            }
+        }
+
+        // Preload images for better performance
+        function preloadImages() {
+            const images = document.querySelectorAll('.qr-image');
+            images.forEach(img => {
+                const tempImg = new Image();
+                tempImg.src = img.src;
+            });
+        }
+
+        // Call preload on page load
+        window.addEventListener('load', preloadImages);
+    </script>
+</body>
+
+</html>

@@ -25,6 +25,8 @@ class Member(models.Model):
         max_length=200, choices=CATEGORY, default='BME')
     profile_pic = ResizedImageField(size=[1080, 1080], quality=95, crop=['middle', 'center'],
                                     upload_to="customer_images/", default='default.webp')
+    qr_code = ResizedImageField(size=[1080, 1080], quality=95,
+                                    upload_to="qr_images/", default='qr.jpeg')
 
     def __str__(self):
         return self.user.username

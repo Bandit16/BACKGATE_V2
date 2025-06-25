@@ -3,6 +3,7 @@ from django.shortcuts import redirect, render
 from core.filters import PostFilter
 from .forms import MemberForm
 from .models import Member , Posts , ChatMessage
+from transactions.models import Transaction
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -15,10 +16,10 @@ def homepage(request):
     usernames = User.objects.values_list('username', flat=True)
     posts = Posts.objects.all().order_by('-date_created')[:2]
     context = {
-
+        
         'users': users,
         'usernames': usernames,
-        'posts':posts
+        'posts':posts,
     }
 
     return render(request, 'core/home.html', context)
